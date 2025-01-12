@@ -1,0 +1,12 @@
+{
+  "description": "Assign hotkeys to applications to give them focus or launch them or hide them\n\nFeatures:\n* Assign a hotkey to an app to:\n- Give it focus if it's already running\n- Hide it if it's already in focus\n- Launch it if it's not running\n* Assign a hotkey to cycle through all the apps that don't have a hotkey\n* Optionally restrict hotkeys to current workspace\n* Supports Wayland",
+  "name": "Wunder App Hotkey",
+  "shell-version": [
+    "45",
+    "46",
+    "47"
+  ],
+  "url": "https://github.com/inbalboa/gnome-wunder-app-hotkey/",
+  "uuid": "wunder-app-hotkey@inbalboa.github.io",
+  "version": 1
+}
