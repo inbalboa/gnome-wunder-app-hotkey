@@ -61,7 +61,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
     }
 
     isMatchingApp(app, name) {
-        return app && app.get_name() && name && app.get_name().toLowerCase() === name.toLowerCase();
+        return app?.get_name() && name && app.get_name().toLowerCase() === name.toLowerCase();
     }
 
     focusOrLaunch(tuple) {
@@ -82,7 +82,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
 
         const wins = this.getAllWindows();
         for (let i = 0; i <= wins.length; i++) {
-            const mw = wins[i] && wins[i].get_meta_window();
+            const mw = wins[i]?.get_meta_window();
             if (mw) {
                 const winApp = this.tracker.get_window_app(mw);
                 if (winApp.get_id() === definedApp.get_id()) {
@@ -106,7 +106,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
         if (appWindows.length > 0) {
             if (activeAppWindow) {
                 // App was already active; cycle through its windows
-                if (appWindows.length == 1 && this.settings.get_boolean('hide-active')) {
+                if (appWindows.length === 1 && this.settings.get_boolean('hide-active')) {
                     this.hide(activeAppWindow);
                 }
                 else {
@@ -134,7 +134,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
 
         if (activeWin) {
             for (let i = 0; i <= wins.length; i++) {
-                const win = wins[i] && wins[i].get_meta_window();
+                const win = wins[i]?.get_meta_window();
                 if (win === activeWin) {
                     position = i;
                 }
@@ -160,7 +160,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
 
         if (this.settings.get_boolean('restrict-to-current-workspace')) {
             const workspace = global.get_workspace_manager().get_active_workspace().index();
-            return wins.filter(wa => wa.get_meta_window().get_workspace().index() == workspace);
+            return wins.filter(wa => wa.get_meta_window().get_workspace().index() === workspace);
         }
         else {
             return wins;
