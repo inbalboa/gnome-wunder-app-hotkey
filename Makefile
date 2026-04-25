@@ -1,4 +1,4 @@
-TAG=`jq '.version' metadata.json`
+TAG=`jq -r '."version-name"' metadata.json`
 
 check:
 	@printf "==> checking the working tree... "
