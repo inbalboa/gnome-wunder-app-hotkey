@@ -1,4 +1,4 @@
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import Gio from 'gi://Gio';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -7,7 +7,6 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 const MAX_NUMBER = 20;
 
 export default class HappyAppyHotkeyExtension extends Extension {
-
     enable() {
         this.apps = [];
         this.settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
@@ -15,20 +14,20 @@ export default class HappyAppyHotkeyExtension extends Extension {
         this.initSettings();
         this.tracker = Shell.WindowTracker.get_default();
 
-        for (let i = 0; i < MAX_NUMBER; i++) {
+        for (let i = 0; i < MAX_NUMBER; i++)
             this.addKeyBinding(i, () => this.focusOrLaunch(this.apps[i]));
-        }
+
         this.addKeyBinding('unbound-cycle', () => this.unboundCycle());
     }
 
     disable() {
         this.removeKeyBinding('unbound-cycle');
-        for (let i = 0; i < MAX_NUMBER; i++) {
+        for (let i = 0; i < MAX_NUMBER; i++)
             this.removeKeyBinding(i);
-        }
-        if (this.settingId) {
+
+        if (this.settingId)
             this.settings.disconnect(this.settingId);
-        }
+
         this.tracker = null;
         this.settings = null;
         this.apps = null;
@@ -41,7 +40,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
         for (let i = 0; i < MAX_NUMBER; i++) {
             this.apps[i] = [
                 existingApps.find(a => this.isMatchingApp(a, this.settings.get_string(`app-${i}`))),
-                this.settings.get_boolean(`start-${i}`)
+                this.settings.get_boolean(`start-${i}`),
             ];
         }
     }
@@ -65,15 +64,13 @@ export default class HappyAppyHotkeyExtension extends Extension {
     }
 
     focusOrLaunch(tuple) {
-        if (!tuple) {
+        if (!tuple)
             return;
-        }
 
         const definedApp = tuple[0];
         const shouldLaunch = tuple[1];
-        if (!definedApp) {
+        if (!definedApp)
             return;
-        }
 
         const appWindows = [];
         let activeAppWindow = null;
@@ -89,9 +86,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
                     appWindows.push(mw);
 
                     // The app is already active; prepare for cycling
-                    if (mw.has_focus()) {
+                    if (mw.has_focus())
                         activeAppWindow = mw;
-                    }
 
                     // Determine which window was used last
                     const userTime = mw.get_user_time();
@@ -108,23 +104,20 @@ export default class HappyAppyHotkeyExtension extends Extension {
                 // App was already active; cycle through its windows
                 if (appWindows.length === 1 && this.settings.get_boolean('hide-active')) {
                     this.hide(activeAppWindow);
-                }
-                else {
+                } else {
                     const currentIndex = appWindows.indexOf(activeAppWindow);
                     const nextIndex = (currentIndex + 1) % appWindows.length;
                     this.activate(appWindows[nextIndex]);
                 }
-            }
-            else {
+            } else {
                 // App wasn't active already; activate most recently used
                 this.activate(topmostAppWindow);
             }
             return;
         }
 
-        if (shouldLaunch) {
+        if (shouldLaunch)
             definedApp.launch([], null);
-        }
     }
 
     unboundCycle() {
@@ -135,9 +128,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
         if (activeWin) {
             for (let i = 0; i <= wins.length; i++) {
                 const win = wins[i]?.get_meta_window();
-                if (win === activeWin) {
+                if (win === activeWin)
                     position = i;
-                }
             }
         }
 
@@ -162,26 +154,20 @@ export default class HappyAppyHotkeyExtension extends Extension {
             const workspace = global.get_workspace_manager().get_active_workspace().index();
             return wins.filter(wa => wa.get_meta_window().get_workspace().index() === workspace);
         }
-        else {
-            return wins;
-        }
+        return wins;
     }
 
     getActiveWindow() {
         const win = global.display.focus_window;
-
-        if (win && win.get_window_type() !== Meta.WindowType.DESKTOP) {
+        if (win && win.get_window_type() !== Meta.WindowType.DESKTOP)
             return win;
-        }
-
         return null;
     }
 
     appIsBound(app) {
         for (const a of this.apps) {
-            if (a[0] && app.get_id() === a[0].get_id()) {
+            if (a[0] && app.get_id() === a[0].get_id())
                 return true;
-            }
         }
         return false;
     }

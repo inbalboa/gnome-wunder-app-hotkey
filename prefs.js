@@ -3,13 +3,12 @@ import Gio from 'gi://Gio';
 import Gdk from 'gi://Gdk';
 import Gtk from 'gi://Gtk';
 import GObject from 'gi://GObject';
-import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 const MAX_NUMBER = 20;
-const hotkeyHandles = []
+const hotkeyHandles = [];
 
 export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
-
     fillPreferencesWindow(win) {
         const settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
 
@@ -55,9 +54,8 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         this.makeAddButton(page, settings, win);
 
         const n = settings.get_int('number');
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++)
             this.makeAppHotkey(i, page, settings, win);
-        }
     }
 
     makeAddButton(page, settings, parentWin) {
@@ -81,11 +79,11 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const startCheckbox = this.makeCheckbox(i, settings, 'Launch if necessary');
 
         const delBtn = new Gtk.Button({
-            label: 'Remove hotkey'
+            label: 'Remove hotkey',
         });
         delBtn.connect('clicked', () => {
             this.deleteHotkey(i, page, settings);
-        })
+        });
 
         const handle = this.addToPage(page, 'Hotkey', hotkeyBtn, delBtn, 'App', app, appBtn, startCheckbox, null, null);
         hotkeyHandles.push(handle);
@@ -96,7 +94,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const btn = new Gtk.Button();
         btn.connect('clicked', () => {
             this.createShortcutDialog(hotkeyKey, settings, parentWin);
-        })
+        });
 
         settings.connect(`changed::${hotkeyKey}`, () => {
             this.updateHotkeyButton(btn, hotkeyKey, settings);
@@ -109,12 +107,11 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
     updateHotkeyButton(btn, hotkeyKey, settings) {
         const text = settings.get_strv(hotkeyKey)[0];
-        if (text) {
+        if (text)
             btn.set_label(text);
-        }
-        else {
+
+        else
             btn.set_label('Click to assign hotkey');
-        }
     }
 
     makeApp(i, settings, parentWin) {
@@ -122,14 +119,14 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         const app = new Gtk.Entry({
             hexpand: true,
-            xalign: Gtk.Align.CENTER
+            xalign: Gtk.Align.CENTER,
         });
         const appBtn = new Gtk.Button({
-            label: 'Pick app'
+            label: 'Pick app',
         });
         appBtn.connect('clicked', () => {
             this.createAppChooserDialog(app, parentWin);
-        })
+        });
 
         settings.bind(appKey, app, 'text', Gio.SettingsBindFlags.DEFAULT);
 
@@ -141,7 +138,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         // const box = new Gtk.CheckButton();
         const box = new Adw.SwitchRow({
-            title: title,
+            title,
         });
 
         settings.bind(appKey, box, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -180,7 +177,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             title: 'Set hotkey',
             use_header_bar: 1,
             modal: true,
-            resizable: false
+            resizable: false,
         });
         dialog.set_transient_for(parentWin);
         dialog.set_size_request(440, 200);
@@ -191,13 +188,13 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             marginStart: 16,
             marginEnd: 16,
             marginTop: 16,
-            marginBottom: 16
+            marginBottom: 16,
         });
         dialog.get_content_area().append(box);
 
         const label = new Gtk.Label({
             vexpand: true,
-            label: 'Press keyboard shortcut, or Escape to cancel, or BackSpace to clear the hotkey.'
+            label: 'Press keyboard shortcut, or Escape to cancel, or BackSpace to clear the hotkey.',
         });
         box.append(label);
 
@@ -219,7 +216,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
                 return Gdk.EVENT_STOP;
             }
 
-            if (this.isBindingValid({ mask, keycode, keyval })) {
+            if (this.isBindingValid({mask, keycode, keyval})) {
                 const binding = Gtk.accelerator_name_with_keycode(
                     null,
                     keyval,
@@ -230,35 +227,33 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
                 dialog.close();
             }
             return Gdk.EVENT_STOP;
-
-        })
+        });
 
         dialog.show();
     }
 
-    isBindingValid({ mask, keycode, keyval }) {
+    isBindingValid({mask, keycode, keyval}) {
         if ((mask === 0 || mask === Gdk.ModifierType.SHIFT_MASK) && keycode !== 0) {
             if (
-                (keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z)
-                || (keyval >= Gdk.KEY_A && keyval <= Gdk.KEY_Z)
-                || (keyval >= Gdk.KEY_0 && keyval <= Gdk.KEY_9)
-                || (keyval >= Gdk.KEY_kana_fullstop && keyval <= Gdk.KEY_semivoicedsound)
-                || (keyval >= Gdk.KEY_Arabic_comma && keyval <= Gdk.KEY_Arabic_sukun)
-                || (keyval >= Gdk.KEY_Serbian_dje && keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
-                || (keyval >= Gdk.KEY_Greek_ALPHAaccent && keyval <= Gdk.KEY_Greek_omega)
-                || (keyval >= Gdk.KEY_hebrew_doublelowline && keyval <= Gdk.KEY_hebrew_taf)
-                || (keyval >= Gdk.KEY_Thai_kokai && keyval <= Gdk.KEY_Thai_lekkao)
-                || (keyval >= Gdk.KEY_Hangul_Kiyeog && keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-                || (keyval === Gdk.KEY_space && mask === 0)
-            ) {
+                (keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z) ||
+                (keyval >= Gdk.KEY_A && keyval <= Gdk.KEY_Z) ||
+                (keyval >= Gdk.KEY_0 && keyval <= Gdk.KEY_9) ||
+                (keyval >= Gdk.KEY_kana_fullstop && keyval <= Gdk.KEY_semivoicedsound) ||
+                (keyval >= Gdk.KEY_Arabic_comma && keyval <= Gdk.KEY_Arabic_sukun) ||
+                (keyval >= Gdk.KEY_Serbian_dje && keyval <= Gdk.KEY_Cyrillic_HARDSIGN) ||
+                (keyval >= Gdk.KEY_Greek_ALPHAaccent && keyval <= Gdk.KEY_Greek_omega) ||
+                (keyval >= Gdk.KEY_hebrew_doublelowline && keyval <= Gdk.KEY_hebrew_taf) ||
+                (keyval >= Gdk.KEY_Thai_kokai && keyval <= Gdk.KEY_Thai_lekkao) ||
+                (keyval >= Gdk.KEY_Hangul_Kiyeog && keyval <= Gdk.KEY_Hangul_J_YeorinHieuh) ||
+                (keyval === Gdk.KEY_space && mask === 0)
+            )
                 return false;
-            }
         }
 
-        return Gtk.accelerator_valid(keyval, mask)
-            || (keyval === Gdk.KEY_Tab && mask !== 0)
-            || (keyval === Gdk.KEY_Scroll_Lock)
-            || (keyval === Gdk.KEY_Break);
+        return Gtk.accelerator_valid(keyval, mask) ||
+            (keyval === Gdk.KEY_Tab && mask !== 0) ||
+            (keyval === Gdk.KEY_Scroll_Lock) ||
+            (keyval === Gdk.KEY_Break);
     }
 
     createAppChooserDialog(textbox, parentWin) {
@@ -266,7 +261,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             title: 'Choose an application',
             use_header_bar: true,
             modal: true,
-            resizable: false
+            resizable: false,
         });
         dialog.set_transient_for(parentWin);
         dialog.set_size_request(300, 700);
@@ -276,11 +271,11 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
-            spacing: 10
+            spacing: 10,
         });
         dialog.get_content_area().append(box);
 
-        const scrolledWindow = new Gtk.ScrolledWindow({ vexpand: true });
+        const scrolledWindow = new Gtk.ScrolledWindow({vexpand: true});
         scrolledWindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
         box.append(scrolledWindow);
 
@@ -290,14 +285,14 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         this.getInstalledApps().forEach(a => {
             const iter = listStore.append();
             listStore.set(iter, [0], [a]);
-        })
+        });
 
-        const appNameColumn = new Gtk.TreeViewColumn({ title: 'Application name' });
+        const appNameColumn = new Gtk.TreeViewColumn({title: 'Application name'});
         const cellRenderer = new Gtk.CellRendererText();
         appNameColumn.pack_start(cellRenderer, true);
         appNameColumn.add_attribute(cellRenderer, 'text', 0);
 
-        const treeView = new Gtk.TreeView({ model: listStore });
+        const treeView = new Gtk.TreeView({model: listStore});
         treeView.append_column(appNameColumn);
         treeView.connect('row-activated', () => {
             dialog.response(Gtk.ResponseType.OK);
@@ -307,7 +302,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const selection = treeView.get_selection();
         selection.set_mode(Gtk.SelectionMode.SINGLE);
 
-        dialog.connect('response', (dialog, responseId) => {
+        dialog.connect('response', (dialog_, responseId) => {
             if (responseId === Gtk.ResponseType.OK) {
                 const [success, model, iter] = selection.get_selected();
                 if (success) {
@@ -315,7 +310,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
                     this.updateApp(textbox, appName);
                 }
             }
-            dialog.destroy();
+            dialog_.destroy();
         });
         dialog.show();
     }
@@ -335,34 +330,34 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         const label1 = new Gtk.Label({
             halign: Gtk.Align.START,
-            label: `${labelText1}:`
+            label: `${labelText1}:`,
         });
         grid.attach(label1, 0, 0, 1, 1);
         grid.attach(widget1, 1, 0, 1, 1);
 
-        if (button1) {
+        if (button1)
             grid.attach(button1, 2, 0, 1, 1);
-        }
+
 
         if (button2) {
             const label2 = new Gtk.Label({
                 halign: Gtk.Align.START,
-                label: `${labelText2}:`
+                label: `${labelText2}:`,
             });
             grid.attach(label2, 0, 1, 1, 1);
             grid.attach(widget2, 1, 1, 1, 1);
             grid.attach(button2, 2, 1, 1, 1);
         }
 
-        if (widget3) {
+        if (widget3)
             handle.add(widget3);
-        }
+
 
         if (explanationText1) {
             const explanation = new Gtk.Label({
                 label: `<small>${explanationText1}</small>`,
                 halign: Gtk.Align.END,
-                use_markup: true
+                use_markup: true,
             });
             grid.attach(explanation, 0, 2, 3, 1);
         }
@@ -370,7 +365,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             const explanation = new Gtk.Label({
                 label: `<small>${explanationText2}</small>`,
                 halign: Gtk.Align.END,
-                use_markup: true
+                use_markup: true,
             });
             grid.attach(explanation, 0, 3, 3, 1);
         }
@@ -392,7 +387,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             margin_end: 12,
             margin_top: 12,
             margin_bottom: 12,
-            column_homogeneous: false
+            column_homogeneous: false,
         });
         row.set_child(grid);
 
