@@ -1,4 +1,7 @@
+UUID=`jq -r '.uuid' metadata.json`
 TAG=`jq -r '."version-name"' metadata.json`
+PACKAGE_NAME=`jq -r '.name' metadata.json`
+PACKAGE_URL=`jq -r '.url' metadata.json`
 
 check:
 	@printf "==> checking the working tree... "
@@ -14,17 +17,27 @@ pub:
 
 install:
 	@printf "==> installing locally...\n"
-	@glib-compile-schemas schemas
-	@gnome-extensions pack --force --extra-source="LICENSE.md"
-	@gnome-extensions install --force wunder-app-hotkey@inbalboa.github.io.shell-extension.zip
+	@gnome-extensions install --force $(UUID).shell-extension.zip
 	@printf "Restart Gnome Shell session\n"
 
-package:
+uninstall:
+	@printf "==> uninstalling...\n"
+	@gnome-extensions uninstall $(UUID)
+
+reinstall: uninstall install
+	@printf "==> reinstalling locally...\n"
+
+clean:
+	@printf "==> cleaning...\n"
+	@rm -f $(UUID).shell-extension.zip
+	@rm -f schemas/gschemas.compiled
+
+build: clean
 	@printf "==> packaging...\n"
-	@gnome-extensions pack --force --extra-source="LICENSE.md"
+	@gnome-extensions pack --force --extra-source="LICENSE"
 
 release: check tag pub
-	@printf "\nPublished at %s\n\n" "`date`"
+	@printf "\nPublished at %s\n\n" "$(strftime '%a %b %d %T %Z %Y' $EPOCHSECONDS)"
 
-.DEFAULT_GOAL := package
-.PHONY: check tag pub install package release
+.DEFAULT_GOAL := build
+.PHONY: check tag pub install uninstall reinstall build clean release
