@@ -82,7 +82,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
             const mw = wins[i].get_meta_window();
             if (mw) {
                 const winApp = this.tracker.get_window_app(mw);
-                if (winApp?.get_id() === definedApp.get_id()) {
+                if (winApp && winApp.get_id() === definedApp.get_id()) {
                     appWindows.push(mw);
 
                     // The app is already active; prepare for cycling
@@ -122,18 +122,20 @@ export default class HappyAppyHotkeyExtension extends Extension {
 
     unboundCycle() {
         const activeWin = this.getActiveWindow();
+        if (!activeWin)
+            return;
+
         const wins = this.getAllWindows();
         let position = -1;
-
-        if (activeWin) {
-            for (let i = 0; i < wins.length; i++) {
-                const win = wins[i].get_meta_window();
-                if (win === activeWin) {
-                    position = i;
-                    break;
-                }
+        for (let i = 0; i < wins.length; i++) {
+            const win = wins[i].get_meta_window();
+            if (win === activeWin) {
+                position = i;
+                break;
             }
         }
+        if (position === -1)
+            return;
 
         for (let i = 0; i < wins.length; i++) {
             const x = (i + position + 1) % wins.length;
@@ -167,8 +169,10 @@ export default class HappyAppyHotkeyExtension extends Extension {
     }
 
     appIsBound(app) {
+        if (!app)
+            return false;
         for (const a of this.apps) {
-            if (a[0] && app?.get_id() === a[0].get_id())
+            if (a[0] && app.get_id() === a[0].get_id())
                 return true;
         }
         return false;
