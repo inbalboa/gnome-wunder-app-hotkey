@@ -12,7 +12,7 @@ const CYCLABLE_WINDOW_TYPES = new Set([
     Meta.WindowType.MODAL_DIALOG,
 ]);
 
-export default class HappyAppyHotkeyExtension extends Extension {
+export default class WunderAppHotkeyExtension extends Extension {
     apps = null;
     settings = null;
     settingId = null;
