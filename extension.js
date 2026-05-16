@@ -15,15 +15,15 @@ export default class HappyAppyHotkeyExtension extends Extension {
         this.tracker = Shell.WindowTracker.get_default();
 
         for (let i = 0; i < MAX_NUMBER; i++)
-            this.addKeyBinding(i, () => this.focusOrLaunch(this.apps[i]));
+            this.addKeyBinding(`hotkey-${i}`, () => this.focusOrLaunch(this.apps[i]));
 
-        this.addKeyBinding('unbound-cycle', () => this.unboundCycle());
+        this.addKeyBinding('hotkey-unbound-cycle', () => this.unboundCycle());
     }
 
     disable() {
-        this.removeKeyBinding('unbound-cycle');
+        Main.wm.removeKeybinding('hotkey-unbound-cycle');
         for (let i = 0; i < MAX_NUMBER; i++)
-            this.removeKeyBinding(i);
+            Main.wm.removeKeybinding(`hotkey-${i}`);
 
         if (this.settingId)
             this.settings.disconnect(this.settingId);
@@ -45,18 +45,14 @@ export default class HappyAppyHotkeyExtension extends Extension {
         }
     }
 
-    addKeyBinding(hotkey, callback) {
+    addKeyBinding(key, callback) {
         Main.wm.addKeybinding(
-            `hotkey-${hotkey}`,
+            key,
             this.settings,
             Meta.KeyBindingFlags.NONE,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             callback
         );
-    }
-
-    removeKeyBinding(hotkey) {
-        Main.wm.removeKeybinding(`hotkey-${hotkey}`);
     }
 
     isMatchingApp(app, name) {
