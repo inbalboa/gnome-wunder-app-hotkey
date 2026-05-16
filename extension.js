@@ -52,9 +52,9 @@ export default class HappyAppyHotkeyExtension extends Extension {
         const existingApps = Gio.AppInfo.get_all()
             .filter(ai => ai.should_show());
 
-        for (let i = 0; i < MAX_NUMBER; i++) {
+        for (let i = 0; i < MAX_NUMBER; i++)
             this.apps[i] = existingApps.find(a => this.isMatchingApp(a, this.settings.get_string(`app-${i}`)));
-        }
+
 
         this.restrictToCurrentWorkspace = this.settings.get_boolean('restrict-to-current-workspace');
         this.launchIfNecessary = this.settings.get_boolean('launch-if-necessary');
