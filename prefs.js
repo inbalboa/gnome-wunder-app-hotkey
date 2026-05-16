@@ -2,199 +2,174 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gdk from 'gi://Gdk';
 import Gtk from 'gi://Gtk';
-import GObject from 'gi://GObject';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 const MAX_NUMBER = 20;
+const ICON_SIZE = 32;
 
 export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     fillPreferencesWindow(win) {
         const settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
 
-        this.hotkeyHandles = [];
+        this.hotkeyRows = [];
         this.addAppHotkeyPage(win, settings);
         this.addMiscSettingPage(win, settings);
     }
 
-    addMiscSettingPage(win, settings) {
-        const page = new Adw.PreferencesPage();
-        page.set_title('Misc');
-        page.set_icon_name('dialog-information-symbolic');
-        win.add(page);
-
-        // Restrict to current workspace
-        const restrictToCurrentWorkspaceGroup = new Adw.PreferencesGroup({});
-        page.add(restrictToCurrentWorkspaceGroup);
-        const restrictToCurrentWorkspaceRow = new Adw.SwitchRow({
-            title: 'Restrict to current workspace',
-        });
-        restrictToCurrentWorkspaceGroup.add(restrictToCurrentWorkspaceRow);
-        settings.bind('restrict-to-current-workspace', restrictToCurrentWorkspaceRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-        // Hide active
-        const hideActiveGroup = new Adw.PreferencesGroup({});
-        page.add(hideActiveGroup);
-        const hideActiveRow = new Adw.SwitchRow({
-            title: 'Drop the window to the background if it is already in focus',
-        });
-        hideActiveGroup.add(hideActiveRow);
-        settings.bind('hide-active', hideActiveRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-        // Unbound cycle
-        const unboundCycle = this.makeHotkeyButton('unbound-cycle', settings, win);
-        this.addToPage(page, {
-            rows: [{label: 'Unbound cycle', widget: unboundCycle}],
-            explanation: 'Cycle through apps that aren\'t bound to a hotkey in the other tab',
-        });
-    }
-
     addAppHotkeyPage(win, settings) {
-        const page = new Adw.PreferencesPage();
-        page.set_title('General');
-        page.set_icon_name('preferences-system-symbolic');
+        const page = new Adw.PreferencesPage({
+            title: 'General',
+            icon_name: 'preferences-system-symbolic',
+        });
         win.add(page);
 
-        this.makeAddButton(page, settings, win);
+        this.hotkeysGroup = new Adw.PreferencesGroup();
+        page.add(this.hotkeysGroup);
+
+        const addBtn = new Gtk.Button({
+            label: 'Add Application',
+            halign: Gtk.Align.CENTER,
+            css_classes: ['suggested-action', 'pill'],
+        });
+        addBtn.connect('clicked', () => this.onAddApplication(settings, win));
+        const addBtnGroup = new Adw.PreferencesGroup();
+        addBtnGroup.add(addBtn);
+        page.add(addBtnGroup);
 
         const n = settings.get_int('number');
         for (let i = 0; i < n; i++)
-            this.makeAppHotkey(i, page, settings, win);
+            this.makeAppHotkeyRow(i, settings, win);
     }
 
-    makeAddButton(page, settings, parentWin) {
-        const btn = new Gtk.Button({
-            halign: Gtk.Align.END,
-            label: 'Add hotkey',
-            css_classes: ['suggested-action'],
+    addMiscSettingPage(win, settings) {
+        const page = new Adw.PreferencesPage({
+            title: 'Misc',
+            icon_name: 'dialog-information-symbolic',
         });
-        btn.connect('clicked', () => {
-            this.addHotkey(page, settings, parentWin);
-        });
+        win.add(page);
 
-        const group = new Adw.PreferencesGroup();
-        page.add(group);
-        group.add(btn);
+        const optionsGroup = new Adw.PreferencesGroup();
+        page.add(optionsGroup);
+
+        const restrictRow = new Adw.SwitchRow({
+            title: 'Restrict to current workspace',
+        });
+        optionsGroup.add(restrictRow);
+        settings.bind('restrict-to-current-workspace', restrictRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const hideActiveRow = new Adw.SwitchRow({
+            title: 'Drop the window to the background if it is already in focus',
+        });
+        optionsGroup.add(hideActiveRow);
+        settings.bind('hide-active', hideActiveRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const launchRow = new Adw.SwitchRow({
+            title: 'Launch if necessary',
+            subtitle: 'Start the application if it is not running yet',
+        });
+        optionsGroup.add(launchRow);
+        settings.bind('launch-if-necessary', launchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const cycleGroup = new Adw.PreferencesGroup();
+        page.add(cycleGroup);
+        const cycleRow = new Adw.ActionRow({
+            title: 'Unbound cycle',
+            subtitle: 'Cycle through apps that aren\'t bound to a hotkey in the other tab',
+        });
+        const cycleBtn = this.makeHotkeyButton('hotkey-unbound-cycle', settings, win);
+        cycleBtn.set_valign(Gtk.Align.CENTER);
+        cycleRow.add_suffix(cycleBtn);
+        cycleGroup.add(cycleRow);
     }
 
-    makeAppHotkey(i, page, settings, parentWin) {
-        const hotkeyBtn = this.makeHotkeyButton(i, settings, parentWin);
-        const [app, appBtn] = this.makeApp(i, settings, parentWin);
-        const startCheckbox = this.makeCheckbox(i, settings, 'Launch if necessary');
+    makeAppHotkeyRow(i, settings, parentWin) {
+        const row = new Adw.ActionRow();
+
+        const iconImg = new Gtk.Image({pixel_size: ICON_SIZE});
+        row.add_prefix(iconImg);
+
+        const updateRow = () => {
+            const id = settings.get_string(`app-${i}`);
+            const info = id ? Gio.DesktopAppInfo.new(id) : null;
+            row.title = info?.get_name() ?? '(unknown)';
+            row.subtitle = info?.get_description() ?? '';
+            const icon = info?.get_icon();
+            if (icon)
+                iconImg.set_from_gicon(icon);
+            else
+                iconImg.clear();
+        };
+        settings.connect(`changed::app-${i}`, updateRow);
+        updateRow();
+
+        const hotkeyBtn = this.makeHotkeyButton(`hotkey-${i}`, settings, parentWin);
+        hotkeyBtn.set_valign(Gtk.Align.CENTER);
+        row.add_suffix(hotkeyBtn);
 
         const delBtn = new Gtk.Button({
-            label: 'Remove hotkey',
+            icon_name: 'user-trash-symbolic',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat'],
+            tooltip_text: 'Remove',
         });
-        delBtn.connect('clicked', () => {
-            this.deleteHotkey(i, page, settings);
-        });
+        delBtn.connect('clicked', () => this.deleteHotkey(i, settings));
+        row.add_suffix(delBtn);
 
-        const handle = this.addToPage(page, {
-            rows: [
-                {label: 'Hotkey', widget: hotkeyBtn, button: delBtn},
-                {label: 'App', widget: app, button: appBtn},
-            ],
-            extraWidget: startCheckbox,
-        });
-        this.hotkeyHandles.push(handle);
+        this.hotkeysGroup.add(row);
+        this.hotkeyRows.push(row);
     }
 
-    makeHotkeyButton(i, settings, parentWin) {
-        const hotkeyKey = `hotkey-${i}`;
-        const btn = new Gtk.Button();
-        btn.connect('clicked', () => {
-            this.createShortcutDialog(hotkeyKey, settings, parentWin);
-        });
-
-        settings.connect(`changed::${hotkeyKey}`, () => {
-            this.updateHotkeyButton(btn, hotkeyKey, settings);
-        });
-
-        this.updateHotkeyButton(btn, hotkeyKey, settings);
-
-        return btn;
-    }
-
-    updateHotkeyButton(btn, hotkeyKey, settings) {
-        const text = settings.get_strv(hotkeyKey)[0];
-        if (text)
-            btn.set_label(text);
-
-        else
-            btn.set_label('Click to assign hotkey');
-    }
-
-    makeApp(i, settings, parentWin) {
-        const appKey = `app-${i}`;
-
-        const app = new Gtk.Entry({
-            hexpand: true,
-            xalign: Gtk.Align.CENTER,
-            editable: false,
-            can_focus: false,
-        });
-        const appBtn = new Gtk.Button({
-            label: 'Pick app',
-        });
-        appBtn.connect('clicked', () => {
-            this.createAppChooserDialog(appKey, settings, parentWin);
-        });
-
-        const updateEntry = () => {
-            const id = settings.get_string(appKey);
-            const info = id ? Gio.DesktopAppInfo.new(id) : null;
-            app.set_text(info?.get_name() ?? '');
-        };
-        settings.connect(`changed::${appKey}`, updateEntry);
-        updateEntry();
-
-        return [app, appBtn];
-    }
-
-    makeCheckbox(i, settings, title) {
-        const appKey = `start-${i}`;
-
-        // const box = new Gtk.CheckButton();
-        const box = new Adw.SwitchRow({
-            title,
-        });
-
-        settings.bind(appKey, box, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-        return box;
-    }
-
-    addHotkey(page, settings, parentWin) {
+    onAddApplication(settings, parentWin) {
         const n = settings.get_int('number');
+        if (n >= MAX_NUMBER)
+            return;
 
-        if (n < MAX_NUMBER) {
-            this.makeAppHotkey(n, page, settings, parentWin);
-
+        this.createAppChooserDialog(parentWin, id => {
+            settings.set_string(`app-${n}`, id);
             settings.set_int('number', n + 1);
-        }
+            this.makeAppHotkeyRow(n, settings, parentWin);
+        });
     }
 
-    deleteHotkey(index, page, settings) {
+    deleteHotkey(index, settings) {
         const n = settings.get_int('number') - 1;
 
         for (let i = index; i < n; i++) {
             settings.set_strv(`hotkey-${i}`, settings.get_strv(`hotkey-${i + 1}`));
             settings.set_string(`app-${i}`, settings.get_string(`app-${i + 1}`));
-            settings.set_boolean(`start-${i}`, settings.get_boolean(`start-${i + 1}`));
         }
         settings.reset(`hotkey-${n}`);
         settings.reset(`app-${n}`);
-        settings.reset(`start-${n}`);
 
-        page.remove(this.hotkeyHandles[n]);
-        this.hotkeyHandles.pop();
+        const lastRow = this.hotkeyRows.pop();
+        this.hotkeysGroup.remove(lastRow);
 
         settings.set_int('number', n);
+    }
+
+    makeHotkeyButton(key, settings, parentWin) {
+        const btn = new Gtk.Button({css_classes: ['pill']});
+        btn.connect('clicked', () => {
+            this.createShortcutDialog(key, settings, parentWin);
+        });
+
+        settings.connect(`changed::${key}`, () => {
+            this.updateHotkeyButton(btn, key, settings);
+        });
+        this.updateHotkeyButton(btn, key, settings);
+
+        return btn;
+    }
+
+    updateHotkeyButton(btn, key, settings) {
+        const text = settings.get_strv(key)[0];
+        btn.set_label(text || 'Click to assign hotkey');
     }
 
     createShortcutDialog(hotkeyKey, settings, parentWin) {
         const dialog = new Gtk.Dialog({
             title: 'Set hotkey',
-            use_header_bar: 1,
+            use_header_bar: true,
             modal: true,
             resizable: false,
         });
@@ -225,7 +200,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             mask &= ~Gdk.ModifierType.LOCK_MASK;
 
             if (mask === 0 && keyval === Gdk.KEY_Escape) {
-                dialog.visible = false;
+                dialog.close();
                 return Gdk.EVENT_STOP;
             }
 
@@ -244,8 +219,9 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
                 );
                 settings.set_strv(hotkeyKey, [binding]);
                 dialog.close();
+                return Gdk.EVENT_STOP;
             }
-            return Gdk.EVENT_STOP;
+            return Gdk.EVENT_PROPAGATE;
         });
 
         dialog.show();
@@ -275,118 +251,81 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             (keyval === Gdk.KEY_Break);
     }
 
-    createAppChooserDialog(appKey, settings, parentWin) {
-        const dialog = new Gtk.Dialog({
+    createAppChooserDialog(parentWin, onConfirm) {
+        const dialog = new Adw.Window({
             title: 'Choose an application',
-            use_header_bar: true,
             modal: true,
-            resizable: false,
+            transient_for: parentWin,
+            default_width: 500,
+            default_height: 600,
         });
-        dialog.set_transient_for(parentWin);
-        dialog.set_size_request(300, 700);
-        dialog.add_button('Cancel', Gtk.ResponseType.CANCEL);
-        dialog.add_button('Confirm', Gtk.ResponseType.OK);
-        dialog.set_default_response(Gtk.ResponseType.OK);
+
+        const toolbarView = new Adw.ToolbarView();
+        toolbarView.add_top_bar(new Adw.HeaderBar());
+        dialog.set_content(toolbarView);
 
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
-            spacing: 10,
+            spacing: 12,
+            margin_start: 12,
+            margin_end: 12,
+            margin_top: 12,
+            margin_bottom: 12,
         });
-        dialog.get_content_area().append(box);
+        toolbarView.set_content(box);
+
+        const searchEntry = new Gtk.SearchEntry({
+            placeholder_text: 'Search applications',
+        });
+        box.append(searchEntry);
 
         const scrolledWindow = new Gtk.ScrolledWindow({vexpand: true});
-        scrolledWindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
         box.append(scrolledWindow);
 
-        const listStore = new Gtk.ListStore();
-        listStore.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
-        listStore.set_sort_column_id(0, Gtk.SortType.ASCENDING);
-        this.getInstalledApps().forEach(({name, id}) => {
-            const iter = listStore.append();
-            listStore.set(iter, [0, 1], [name, id]);
+        const listBox = new Gtk.ListBox({
+            selection_mode: Gtk.SelectionMode.NONE,
+            css_classes: ['boxed-list'],
+        });
+        scrolledWindow.set_child(listBox);
+
+        const apps = this.getInstalledApps()
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        apps.forEach(({name, id, description, icon}) => {
+            const row = new Adw.ActionRow({
+                title: name,
+                subtitle: description,
+                activatable: true,
+            });
+            if (icon)
+                row.add_prefix(new Gtk.Image({gicon: icon, pixel_size: ICON_SIZE}));
+            row.connect('activated', () => {
+                onConfirm(id);
+                dialog.close();
+            });
+            listBox.append(row);
         });
 
-        const appNameColumn = new Gtk.TreeViewColumn({title: 'Application name'});
-        const cellRenderer = new Gtk.CellRendererText();
-        appNameColumn.pack_start(cellRenderer, true);
-        appNameColumn.add_attribute(cellRenderer, 'text', 0);
-
-        const treeView = new Gtk.TreeView({model: listStore});
-        treeView.append_column(appNameColumn);
-        treeView.connect('row-activated', () => {
-            dialog.response(Gtk.ResponseType.OK);
+        listBox.set_filter_func(row => {
+            const query = searchEntry.text.toLowerCase();
+            if (!query)
+                return true;
+            return row.title.toLowerCase().includes(query) ||
+                (row.subtitle ?? '').toLowerCase().includes(query);
         });
-        scrolledWindow.set_child(treeView);
+        searchEntry.connect('search-changed', () => listBox.invalidate_filter());
 
-        const selection = treeView.get_selection();
-        selection.set_mode(Gtk.SelectionMode.SINGLE);
-
-        dialog.connect('response', (dialog_, responseId) => {
-            if (responseId === Gtk.ResponseType.OK) {
-                const [success, model, iter] = selection.get_selected();
-                if (success) {
-                    const id = model.get_value(iter, 1);
-                    settings.set_string(appKey, id);
-                }
-            }
-            dialog_.destroy();
-        });
-        dialog.show();
+        dialog.present();
     }
 
     getInstalledApps() {
         return Gio.AppInfo.get_all()
             .filter(ai => ai.should_show())
-            .map(ai => ({name: ai.get_name(), id: ai.get_id()}));
-    }
-
-    addToPage(page, {rows, extraWidget, explanation}) {
-        const [handle, grid] = this.createGrid(page);
-
-        rows.forEach((row, i) => {
-            const label = new Gtk.Label({
-                halign: Gtk.Align.START,
-                label: `${row.label}:`,
-            });
-            grid.attach(label, 0, i, 1, 1);
-            grid.attach(row.widget, 1, i, 1, 1);
-            if (row.button)
-                grid.attach(row.button, 2, i, 1, 1);
-        });
-
-        if (extraWidget)
-            handle.add(extraWidget);
-
-        if (explanation) {
-            const explanationLabel = new Gtk.Label({
-                label: `<small>${explanation}</small>`,
-                halign: Gtk.Align.END,
-                use_markup: true,
-            });
-            grid.attach(explanationLabel, 0, rows.length, 3, 1);
-        }
-
-        return handle;
-    }
-
-    createGrid(page) {
-        const group = new Adw.PreferencesGroup();
-        page.add(group);
-
-        const row = new Adw.ActionRow();
-        group.add(row);
-
-        const grid = new Gtk.Grid({
-            row_spacing: 6,
-            column_spacing: 12,
-            margin_start: 12,
-            margin_end: 12,
-            margin_top: 12,
-            margin_bottom: 12,
-            column_homogeneous: false,
-        });
-        row.set_child(grid);
-
-        return [group, grid];
+            .map(ai => ({
+                name: ai.get_name(),
+                id: ai.get_id(),
+                description: ai.get_description() ?? '',
+                icon: ai.get_icon(),
+            }));
     }
 }

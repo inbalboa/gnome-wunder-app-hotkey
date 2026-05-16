@@ -18,6 +18,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
     settingId = null;
     tracker = null;
     restrictToCurrentWorkspace = false;
+    launchIfNecessary = true;
 
     enable() {
         this.apps = [];
@@ -52,13 +53,11 @@ export default class HappyAppyHotkeyExtension extends Extension {
             .filter(ai => ai.should_show());
 
         for (let i = 0; i < MAX_NUMBER; i++) {
-            this.apps[i] = [
-                existingApps.find(a => this.isMatchingApp(a, this.settings.get_string(`app-${i}`))),
-                this.settings.get_boolean(`start-${i}`),
-            ];
+            this.apps[i] = existingApps.find(a => this.isMatchingApp(a, this.settings.get_string(`app-${i}`)));
         }
 
         this.restrictToCurrentWorkspace = this.settings.get_boolean('restrict-to-current-workspace');
+        this.launchIfNecessary = this.settings.get_boolean('launch-if-necessary');
     }
 
     addKeyBinding(key, callback) {
@@ -75,12 +74,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
         return app?.get_id() === id;
     }
 
-    focusOrLaunch(tuple) {
-        if (!tuple)
-            return;
-
-        const definedApp = tuple[0];
-        const shouldLaunch = tuple[1];
+    focusOrLaunch(definedApp) {
         if (!definedApp)
             return;
 
@@ -125,7 +119,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
             return;
         }
 
-        if (shouldLaunch)
+        if (this.launchIfNecessary)
             definedApp.launch([], null);
     }
 
@@ -172,7 +166,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
         if (!app)
             return false;
         for (const a of this.apps) {
-            if (a[0] && app.get_id() === a[0].get_id())
+            if (a && app.get_id() === a.get_id())
                 return true;
         }
         return false;

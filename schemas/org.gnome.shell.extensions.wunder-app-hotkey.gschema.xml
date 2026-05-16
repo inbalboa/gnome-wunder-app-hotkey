@@ -13,6 +13,10 @@
             <default>true</default>
             <summary>Drop the window to the background if it is already in focus</summary>
         </key>
+        <key type="b" name="launch-if-necessary">
+            <default>true</default>
+            <summary>Launch the application if it is not running yet</summary>
+        </key>
         <key type="as" name="hotkey-unbound-cycle">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey to cycle through apps that aren't bound to a hotkey in the other tab</summary>
@@ -25,10 +29,6 @@
             <default><![CDATA['']]></default>
             <summary>App 0</summary>
         </key>
-        <key type="b" name="start-0">
-            <default>true</default>
-            <summary>Start 0</summary>
-        </key>
         <key type="as" name="hotkey-1">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 1</summary>
@@ -36,10 +36,6 @@
         <key type="s" name="app-1">
             <default><![CDATA['']]></default>
             <summary>App 1</summary>
-        </key>
-        <key type="b" name="start-1">
-            <default>true</default>
-            <summary>Start 1</summary>
         </key>
         <key type="as" name="hotkey-2">
             <default><![CDATA[['']]]></default>
@@ -49,10 +45,6 @@
             <default><![CDATA['']]></default>
             <summary>App 2</summary>
         </key>
-        <key type="b" name="start-2">
-            <default>true</default>
-            <summary>Start 2</summary>
-        </key>
         <key type="as" name="hotkey-3">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 3</summary>
@@ -60,10 +52,6 @@
         <key type="s" name="app-3">
             <default><![CDATA['']]></default>
             <summary>App 3</summary>
-        </key>
-        <key type="b" name="start-3">
-            <default>true</default>
-            <summary>Start 3</summary>
         </key>
         <key type="as" name="hotkey-4">
             <default><![CDATA[['']]]></default>
@@ -73,10 +61,6 @@
             <default><![CDATA['']]></default>
             <summary>App 4</summary>
         </key>
-        <key type="b" name="start-4">
-            <default>true</default>
-            <summary>Start 4</summary>
-        </key>
         <key type="as" name="hotkey-5">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 5</summary>
@@ -84,10 +68,6 @@
         <key type="s" name="app-5">
             <default><![CDATA['']]></default>
             <summary>App 5</summary>
-        </key>
-        <key type="b" name="start-5">
-            <default>true</default>
-            <summary>Start 5</summary>
         </key>
         <key type="as" name="hotkey-6">
             <default><![CDATA[['']]]></default>
@@ -97,10 +77,6 @@
             <default><![CDATA['']]></default>
             <summary>App 6</summary>
         </key>
-        <key type="b" name="start-6">
-            <default>true</default>
-            <summary>Start 6</summary>
-        </key>
         <key type="as" name="hotkey-7">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 7</summary>
@@ -108,10 +84,6 @@
         <key type="s" name="app-7">
             <default><![CDATA['']]></default>
             <summary>App 7</summary>
-        </key>
-        <key type="b" name="start-7">
-            <default>true</default>
-            <summary>Start 7</summary>
         </key>
         <key type="as" name="hotkey-8">
             <default><![CDATA[['']]]></default>
@@ -121,10 +93,6 @@
             <default><![CDATA['']]></default>
             <summary>App 8</summary>
         </key>
-        <key type="b" name="start-8">
-            <default>true</default>
-            <summary>Start 8</summary>
-        </key>
         <key type="as" name="hotkey-9">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 9</summary>
@@ -132,10 +100,6 @@
         <key type="s" name="app-9">
             <default><![CDATA['']]></default>
             <summary>App 9</summary>
-        </key>
-        <key type="b" name="start-9">
-            <default>true</default>
-            <summary>Start 9</summary>
         </key>
         <key type="as" name="hotkey-10">
             <default><![CDATA[['']]]></default>
@@ -145,10 +109,6 @@
             <default><![CDATA['']]></default>
             <summary>App 10</summary>
         </key>
-        <key type="b" name="start-10">
-            <default>true</default>
-            <summary>Start 10</summary>
-        </key>
         <key type="as" name="hotkey-11">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 11</summary>
@@ -156,10 +116,6 @@
         <key type="s" name="app-11">
             <default><![CDATA['']]></default>
             <summary>App 11</summary>
-        </key>
-        <key type="b" name="start-11">
-            <default>true</default>
-            <summary>Start 11</summary>
         </key>
         <key type="as" name="hotkey-12">
             <default><![CDATA[['']]]></default>
@@ -169,10 +125,6 @@
             <default><![CDATA['']]></default>
             <summary>App 12</summary>
         </key>
-        <key type="b" name="start-12">
-            <default>true</default>
-            <summary>Start 12</summary>
-        </key>
         <key type="as" name="hotkey-13">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 13</summary>
@@ -180,10 +132,6 @@
         <key type="s" name="app-13">
             <default><![CDATA['']]></default>
             <summary>App 13</summary>
-        </key>
-        <key type="b" name="start-13">
-            <default>true</default>
-            <summary>Start 13</summary>
         </key>
         <key type="as" name="hotkey-14">
             <default><![CDATA[['']]]></default>
@@ -193,10 +141,6 @@
             <default><![CDATA['']]></default>
             <summary>App 14</summary>
         </key>
-        <key type="b" name="start-14">
-            <default>true</default>
-            <summary>Start 14</summary>
-        </key>
         <key type="as" name="hotkey-15">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 15</summary>
@@ -204,10 +148,6 @@
         <key type="s" name="app-15">
             <default><![CDATA['']]></default>
             <summary>App 15</summary>
-        </key>
-        <key type="b" name="start-15">
-            <default>true</default>
-            <summary>Start 15</summary>
         </key>
         <key type="as" name="hotkey-16">
             <default><![CDATA[['']]]></default>
@@ -217,10 +157,6 @@
             <default><![CDATA['']]></default>
             <summary>App 16</summary>
         </key>
-        <key type="b" name="start-16">
-            <default>true</default>
-            <summary>Start 16</summary>
-        </key>
         <key type="as" name="hotkey-17">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 17</summary>
@@ -228,10 +164,6 @@
         <key type="s" name="app-17">
             <default><![CDATA['']]></default>
             <summary>App 17</summary>
-        </key>
-        <key type="b" name="start-17">
-            <default>true</default>
-            <summary>Start 17</summary>
         </key>
         <key type="as" name="hotkey-18">
             <default><![CDATA[['']]]></default>
@@ -241,10 +173,6 @@
             <default><![CDATA['']]></default>
             <summary>App 18</summary>
         </key>
-        <key type="b" name="start-18">
-            <default>true</default>
-            <summary>Start 18</summary>
-        </key>
         <key type="as" name="hotkey-19">
             <default><![CDATA[['']]]></default>
             <summary>Hotkey 19</summary>
@@ -252,10 +180,6 @@
         <key type="s" name="app-19">
             <default><![CDATA['']]></default>
             <summary>App 19</summary>
-        </key>
-        <key type="b" name="start-19">
-            <default>true</default>
-            <summary>Start 19</summary>
         </key>
     </schema>
 </schemalist>
