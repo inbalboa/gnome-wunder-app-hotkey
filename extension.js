@@ -101,6 +101,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
                 if (appWindows.length === 1 && this.settings.get_boolean('hide-active')) {
                     this.hide(activeAppWindow);
                 } else {
+                    appWindows.sort((a, b) => a.get_stable_sequence() - b.get_stable_sequence());
                     const currentIndex = appWindows.indexOf(activeAppWindow);
                     const nextIndex = (currentIndex + 1) % appWindows.length;
                     this.activate(appWindows[nextIndex]);
