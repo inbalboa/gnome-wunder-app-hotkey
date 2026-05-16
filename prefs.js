@@ -109,7 +109,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const delBtn = new Gtk.Button({
             icon_name: 'user-trash-symbolic',
             valign: Gtk.Align.CENTER,
-            css_classes: ['flat'],
+            css_classes: ['flat', 'destructive-action'],
             tooltip_text: 'Remove',
         });
         delBtn.connect('clicked', () => this.deleteHotkey(i, settings));
