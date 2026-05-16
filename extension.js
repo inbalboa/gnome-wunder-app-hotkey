@@ -7,6 +7,11 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 const MAX_NUMBER = 20;
 
 export default class HappyAppyHotkeyExtension extends Extension {
+    apps = null;
+    settings = null;
+    settingId = null;
+    tracker = null;
+
     enable() {
         this.apps = [];
         this.settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
@@ -25,8 +30,10 @@ export default class HappyAppyHotkeyExtension extends Extension {
         for (let i = 0; i < MAX_NUMBER; i++)
             Main.wm.removeKeybinding(`hotkey-${i}`);
 
-        if (this.settingId)
+        if (this.settingId) {
             this.settings.disconnect(this.settingId);
+            this.settingId = null;
+        }
 
         this.tracker = null;
         this.settings = null;
