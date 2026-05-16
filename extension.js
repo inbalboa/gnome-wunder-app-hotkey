@@ -77,24 +77,20 @@ export default class HappyAppyHotkeyExtension extends Extension {
         let topmostAppWindow = null;
         let mostRecentTime = 0;
 
-        const wins = this.getAllWindows();
-        for (let i = 0; i < wins.length; i++) {
-            const mw = wins[i].get_meta_window();
-            if (mw) {
-                const winApp = this.tracker.get_window_app(mw);
-                if (winApp && winApp.get_id() === definedApp.get_id()) {
-                    appWindows.push(mw);
+        for (const mw of this.getAllWindows()) {
+            const winApp = this.tracker.get_window_app(mw);
+            if (winApp && winApp.get_id() === definedApp.get_id()) {
+                appWindows.push(mw);
 
-                    // The app is already active; prepare for cycling
-                    if (mw.has_focus())
-                        activeAppWindow = mw;
+                // The app is already active; prepare for cycling
+                if (mw.has_focus())
+                    activeAppWindow = mw;
 
-                    // Determine which window was used last
-                    const userTime = mw.get_user_time();
-                    if (userTime > mostRecentTime) {
-                        mostRecentTime = userTime;
-                        topmostAppWindow = mw;
-                    }
+                // Determine which window was used last
+                const userTime = mw.get_user_time();
+                if (userTime > mostRecentTime) {
+                    mostRecentTime = userTime;
+                    topmostAppWindow = mw;
                 }
             }
         }
@@ -126,37 +122,28 @@ export default class HappyAppyHotkeyExtension extends Extension {
             return;
 
         const wins = this.getAllWindows();
-        let position = -1;
-        for (let i = 0; i < wins.length; i++) {
-            const win = wins[i].get_meta_window();
-            if (win === activeWin) {
-                position = i;
-                break;
-            }
-        }
+        const position = wins.indexOf(activeWin);
         if (position === -1)
             return;
 
         for (let i = 0; i < wins.length; i++) {
-            const x = (i + position + 1) % wins.length;
-            const win = wins[x].get_meta_window();
-            if (win) {
-                const winApp = this.tracker.get_window_app(win);
-                if (!this.appIsBound(winApp)) {
-                    this.activate(win);
-                    break;
-                }
+            const win = wins[(i + position + 1) % wins.length];
+            const winApp = this.tracker.get_window_app(win);
+            if (!this.appIsBound(winApp)) {
+                this.activate(win);
+                break;
             }
         }
     }
 
     getAllWindows() {
-        const wins = global.get_window_actors()
-            .filter(wa => !wa.get_meta_window().is_override_redirect());
+        let wins = global.get_window_actors()
+            .map(wa => wa.get_meta_window())
+            .filter(w => w && !w.is_override_redirect());
 
         if (this.settings.get_boolean('restrict-to-current-workspace')) {
             const workspace = global.get_workspace_manager().get_active_workspace().index();
-            return wins.filter(wa => wa.get_meta_window().get_workspace().index() === workspace);
+            wins = wins.filter(w => w.get_workspace().index() === workspace);
         }
         return wins;
     }
