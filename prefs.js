@@ -64,11 +64,11 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         settings.bind('hide-active', hideActiveRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const launchRow = new Adw.SwitchRow({
-            title: 'Launch if necessary',
-            subtitle: 'Start the application if it is not running yet',
+            title: 'Do not launch if not running',
+            subtitle: 'Skip starting the application if it is not running yet',
         });
         optionsGroup.add(launchRow);
-        settings.bind('launch-if-necessary', launchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('do-not-launch-if-not-running', launchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const cycleGroup = new Adw.PreferencesGroup();
         page.add(cycleGroup);

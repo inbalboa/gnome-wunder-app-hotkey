@@ -18,7 +18,7 @@ export default class WunderAppHotkeyExtension extends Extension {
     settingId = null;
     tracker = null;
     restrictToCurrentWorkspace = false;
-    launchIfNecessary = true;
+    doNotLaunchIfNotRunning = false;
 
     enable() {
         this.apps = [];
@@ -57,7 +57,7 @@ export default class WunderAppHotkeyExtension extends Extension {
 
 
         this.restrictToCurrentWorkspace = this.settings.get_boolean('restrict-to-current-workspace');
-        this.launchIfNecessary = this.settings.get_boolean('launch-if-necessary');
+        this.doNotLaunchIfNotRunning = this.settings.get_boolean('do-not-launch-if-not-running');
     }
 
     addKeyBinding(key, callback) {
@@ -119,7 +119,7 @@ export default class WunderAppHotkeyExtension extends Extension {
             return;
         }
 
-        if (this.launchIfNecessary)
+        if (!this.doNotLaunchIfNotRunning)
             definedApp.launch([], null);
     }
 

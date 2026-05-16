@@ -13,9 +13,9 @@
             <default>true</default>
             <summary>Drop the window to the background if it is already in focus</summary>
         </key>
-        <key type="b" name="launch-if-necessary">
-            <default>true</default>
-            <summary>Launch the application if it is not running yet</summary>
+        <key type="b" name="do-not-launch-if-not-running">
+            <default>false</default>
+            <summary>Do not launch the application if it is not running yet</summary>
         </key>
         <key type="as" name="hotkey-unbound-cycle">
             <default><![CDATA[['']]]></default>
