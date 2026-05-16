@@ -6,12 +6,12 @@ import GObject from 'gi://GObject';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 const MAX_NUMBER = 20;
-const hotkeyHandles = [];
 
 export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     fillPreferencesWindow(win) {
         const settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
 
+        this.hotkeyHandles = [];
         this.addAppHotkeyPage(win, settings);
         this.addMiscSettingPage(win, settings);
     }
@@ -86,7 +86,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         });
 
         const handle = this.addToPage(page, 'Hotkey', hotkeyBtn, delBtn, 'App', app, appBtn, startCheckbox, null, null);
-        hotkeyHandles.push(handle);
+        this.hotkeyHandles.push(handle);
     }
 
     makeHotkeyButton(i, settings, parentWin) {
@@ -168,8 +168,8 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         settings.reset(`app-${n}`);
         settings.reset(`start-${n}`);
 
-        page.remove(hotkeyHandles[n]);
-        hotkeyHandles.pop();
+        page.remove(this.hotkeyHandles[n]);
+        this.hotkeyHandles.pop();
 
         settings.set_int('number', n);
     }
