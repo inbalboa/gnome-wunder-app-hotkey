@@ -11,6 +11,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
     settings = null;
     settingId = null;
     tracker = null;
+    restrictToCurrentWorkspace = false;
 
     enable() {
         this.apps = [];
@@ -50,6 +51,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
                 this.settings.get_boolean(`start-${i}`),
             ];
         }
+
+        this.restrictToCurrentWorkspace = this.settings.get_boolean('restrict-to-current-workspace');
     }
 
     addKeyBinding(key, callback) {
@@ -145,7 +148,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
             .map(wa => wa.get_meta_window())
             .filter(w => w && !w.is_override_redirect());
 
-        if (this.settings.get_boolean('restrict-to-current-workspace')) {
+        if (this.restrictToCurrentWorkspace) {
             const workspace = global.get_workspace_manager().get_active_workspace().index();
             wins = wins.filter(w => w.get_workspace().index() === workspace);
         }
