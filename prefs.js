@@ -23,22 +23,22 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         win.add(page);
 
         // Restrict to current workspace
-        const restrict_to_current_workspace_group = new Adw.PreferencesGroup({});
-        page.add(restrict_to_current_workspace_group);
-        const restrict_to_current_workspace_row = new Adw.SwitchRow({
+        const restrictToCurrentWorkspaceGroup = new Adw.PreferencesGroup({});
+        page.add(restrictToCurrentWorkspaceGroup);
+        const restrictToCurrentWorkspaceRow = new Adw.SwitchRow({
             title: 'Restrict to current workspace',
         });
-        restrict_to_current_workspace_group.add(restrict_to_current_workspace_row);
-        settings.bind('restrict-to-current-workspace', restrict_to_current_workspace_row, 'active', Gio.SettingsBindFlags.DEFAULT);
+        restrictToCurrentWorkspaceGroup.add(restrictToCurrentWorkspaceRow);
+        settings.bind('restrict-to-current-workspace', restrictToCurrentWorkspaceRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         // Hide active
-        const hide_active_group = new Adw.PreferencesGroup({});
-        page.add(hide_active_group);
-        const hide_active_row = new Adw.SwitchRow({
+        const hideActiveGroup = new Adw.PreferencesGroup({});
+        page.add(hideActiveGroup);
+        const hideActiveRow = new Adw.SwitchRow({
             title: 'Drop the window to the background if it is already in focus',
         });
-        hide_active_group.add(hide_active_row);
-        settings.bind('hide-active', hide_active_row, 'active', Gio.SettingsBindFlags.DEFAULT);
+        hideActiveGroup.add(hideActiveRow);
+        settings.bind('hide-active', hideActiveRow, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         // Unbound cycle
         const unboundCycle = this.makeHotkeyButton('unbound-cycle', settings, win);
