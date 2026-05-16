@@ -6,6 +6,12 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const MAX_NUMBER = 20;
 
+const CYCLABLE_WINDOW_TYPES = new Set([
+    Meta.WindowType.NORMAL,
+    Meta.WindowType.DIALOG,
+    Meta.WindowType.MODAL_DIALOG,
+]);
+
 export default class HappyAppyHotkeyExtension extends Extension {
     apps = null;
     settings = null;
@@ -157,7 +163,7 @@ export default class HappyAppyHotkeyExtension extends Extension {
 
     getActiveWindow() {
         const win = global.display.focus_window;
-        if (win && win.get_window_type() !== Meta.WindowType.DESKTOP)
+        if (win && CYCLABLE_WINDOW_TYPES.has(win.get_window_type()))
             return win;
         return null;
     }
