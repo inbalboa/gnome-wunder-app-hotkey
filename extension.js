@@ -78,8 +78,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
         let mostRecentTime = 0;
 
         const wins = this.getAllWindows();
-        for (let i = 0; i <= wins.length; i++) {
-            const mw = wins[i]?.get_meta_window();
+        for (let i = 0; i < wins.length; i++) {
+            const mw = wins[i].get_meta_window();
             if (mw) {
                 const winApp = this.tracker.get_window_app(mw);
                 if (winApp.get_id() === definedApp.get_id()) {
@@ -126,10 +126,12 @@ export default class HappyAppyHotkeyExtension extends Extension {
         let position = -1;
 
         if (activeWin) {
-            for (let i = 0; i <= wins.length; i++) {
-                const win = wins[i]?.get_meta_window();
-                if (win === activeWin)
+            for (let i = 0; i < wins.length; i++) {
+                const win = wins[i].get_meta_window();
+                if (win === activeWin) {
                     position = i;
+                    break;
+                }
             }
         }
 
