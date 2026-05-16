@@ -62,8 +62,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
         );
     }
 
-    isMatchingApp(app, name) {
-        return app?.get_name() && name && app.get_name().toLowerCase() === name.toLowerCase();
+    isMatchingApp(app, id) {
+        return app?.get_id() === id;
     }
 
     focusOrLaunch(tuple) {

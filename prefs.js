@@ -129,15 +129,23 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const app = new Gtk.Entry({
             hexpand: true,
             xalign: Gtk.Align.CENTER,
+            editable: false,
+            can_focus: false,
         });
         const appBtn = new Gtk.Button({
             label: 'Pick app',
         });
         appBtn.connect('clicked', () => {
-            this.createAppChooserDialog(app, parentWin);
+            this.createAppChooserDialog(appKey, settings, parentWin);
         });
 
-        settings.bind(appKey, app, 'text', Gio.SettingsBindFlags.DEFAULT);
+        const updateEntry = () => {
+            const id = settings.get_string(appKey);
+            const info = id ? Gio.DesktopAppInfo.new(id) : null;
+            app.set_text(info?.get_name() ?? '');
+        };
+        settings.connect(`changed::${appKey}`, updateEntry);
+        updateEntry();
 
         return [app, appBtn];
     }
@@ -267,7 +275,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             (keyval === Gdk.KEY_Break);
     }
 
-    createAppChooserDialog(textbox, parentWin) {
+    createAppChooserDialog(appKey, settings, parentWin) {
         const dialog = new Gtk.Dialog({
             title: 'Choose an application',
             use_header_bar: true,
@@ -291,11 +299,11 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         box.append(scrolledWindow);
 
         const listStore = new Gtk.ListStore();
-        listStore.set_column_types([GObject.TYPE_STRING]);
+        listStore.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
         listStore.set_sort_column_id(0, Gtk.SortType.ASCENDING);
-        this.getInstalledApps().forEach(a => {
+        this.getInstalledApps().forEach(({name, id}) => {
             const iter = listStore.append();
-            listStore.set(iter, [0], [a]);
+            listStore.set(iter, [0, 1], [name, id]);
         });
 
         const appNameColumn = new Gtk.TreeViewColumn({title: 'Application name'});
@@ -317,8 +325,8 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             if (responseId === Gtk.ResponseType.OK) {
                 const [success, model, iter] = selection.get_selected();
                 if (success) {
-                    const appName = model.get_value(iter, 0);
-                    this.updateApp(textbox, appName);
+                    const id = model.get_value(iter, 1);
+                    settings.set_string(appKey, id);
                 }
             }
             dialog_.destroy();
@@ -329,11 +337,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     getInstalledApps() {
         return Gio.AppInfo.get_all()
             .filter(ai => ai.should_show())
-            .map(ai => ai.get_name());
-    }
-
-    updateApp(textbox, appName) {
-        textbox.set_text(appName);
+            .map(ai => ({name: ai.get_name(), id: ai.get_id()}));
     }
 
     addToPage(page, {rows, extraWidget, explanation}) {
