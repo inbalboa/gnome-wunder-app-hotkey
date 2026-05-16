@@ -42,7 +42,10 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         // Unbound cycle
         const unboundCycle = this.makeHotkeyButton('unbound-cycle', settings, win);
-        this.addToPage(page, 'Unbound cycle', unboundCycle, null, null, null, null, null, null, 'Cycle through apps that aren\'t bound to a hotkey in the other tab', null);
+        this.addToPage(page, {
+            rows: [{label: 'Unbound cycle', widget: unboundCycle}],
+            explanation: 'Cycle through apps that aren\'t bound to a hotkey in the other tab',
+        });
     }
 
     addAppHotkeyPage(win, settings) {
@@ -85,7 +88,13 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             this.deleteHotkey(i, page, settings);
         });
 
-        const handle = this.addToPage(page, 'Hotkey', hotkeyBtn, delBtn, 'App', app, appBtn, startCheckbox, null, null);
+        const handle = this.addToPage(page, {
+            rows: [
+                {label: 'Hotkey', widget: hotkeyBtn, button: delBtn},
+                {label: 'App', widget: app, button: appBtn},
+            ],
+            extraWidget: startCheckbox,
+        });
         this.hotkeyHandles.push(handle);
     }
 
@@ -327,49 +336,30 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         textbox.set_text(appName);
     }
 
-    addToPage(page, labelText1, widget1, button1, labelText2, widget2, button2, widget3, explanationText1, explanationText2) {
+    addToPage(page, {rows, extraWidget, explanation}) {
         const [handle, grid] = this.createGrid(page);
 
-        const label1 = new Gtk.Label({
-            halign: Gtk.Align.START,
-            label: `${labelText1}:`,
-        });
-        grid.attach(label1, 0, 0, 1, 1);
-        grid.attach(widget1, 1, 0, 1, 1);
-
-        if (button1)
-            grid.attach(button1, 2, 0, 1, 1);
-
-
-        if (button2) {
-            const label2 = new Gtk.Label({
+        rows.forEach((row, i) => {
+            const label = new Gtk.Label({
                 halign: Gtk.Align.START,
-                label: `${labelText2}:`,
+                label: `${row.label}:`,
             });
-            grid.attach(label2, 0, 1, 1, 1);
-            grid.attach(widget2, 1, 1, 1, 1);
-            grid.attach(button2, 2, 1, 1, 1);
-        }
+            grid.attach(label, 0, i, 1, 1);
+            grid.attach(row.widget, 1, i, 1, 1);
+            if (row.button)
+                grid.attach(row.button, 2, i, 1, 1);
+        });
 
-        if (widget3)
-            handle.add(widget3);
+        if (extraWidget)
+            handle.add(extraWidget);
 
-
-        if (explanationText1) {
-            const explanation = new Gtk.Label({
-                label: `<small>${explanationText1}</small>`,
+        if (explanation) {
+            const explanationLabel = new Gtk.Label({
+                label: `<small>${explanation}</small>`,
                 halign: Gtk.Align.END,
                 use_markup: true,
             });
-            grid.attach(explanation, 0, 2, 3, 1);
-        }
-        if (explanationText2) {
-            const explanation = new Gtk.Label({
-                label: `<small>${explanationText2}</small>`,
-                halign: Gtk.Align.END,
-                use_markup: true,
-            });
-            grid.attach(explanation, 0, 3, 3, 1);
+            grid.attach(explanationLabel, 0, rows.length, 3, 1);
         }
 
         return handle;
