@@ -167,6 +167,8 @@ export default class HappyAppyHotkeyExtension extends Extension {
     }
 
     appIsBound(app) {
+        if (!app)
+            return false;
         for (const a of this.apps) {
             if (a[0] && app.get_id() === a[0].get_id())
                 return true;
