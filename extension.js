@@ -14,6 +14,7 @@ const CYCLABLE_WINDOW_TYPES = new Set([
 
 export default class WunderAppHotkeyExtension extends Extension {
     apps = null;
+    boundAppIds = null;
     settings = null;
     settingId = null;
     unboundCycleSettingId = null;
@@ -23,10 +24,11 @@ export default class WunderAppHotkeyExtension extends Extension {
     doNotLaunchIfNotRunning = false;
 
     enable() {
-        this.apps = [];
+        this.apps = new Array(MAX_NUMBER).fill(null);
+        this.boundAppIds = new Set();
         this.unboundCycleRegistered = false;
         this.settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
-        this.settingId = this.settings.connect('changed', () => this.initSettings());
+        this.settingId = this.settings.connect('changed', (_, key) => this.onSettingChanged(key));
         this.unboundCycleSettingId = this.settings.connect('changed::hotkey-unbound-cycle',
             () => this.updateUnboundCycleBinding());
         this.initSettings();
@@ -58,6 +60,7 @@ export default class WunderAppHotkeyExtension extends Extension {
         this.tracker = null;
         this.settings = null;
         this.apps = null;
+        this.boundAppIds = null;
     }
 
     updateUnboundCycleBinding() {
@@ -72,15 +75,41 @@ export default class WunderAppHotkeyExtension extends Extension {
     }
 
     initSettings() {
-        const existingApps = Gio.AppInfo.get_all()
-            .filter(ai => ai.should_show());
-
         for (let i = 0; i < MAX_NUMBER; i++)
-            this.apps[i] = existingApps.find(a => this.isMatchingApp(a, this.settings.get_string(`app-${i}`)));
-
+            this.apps[i] = this.loadApp(this.settings.get_string(`app-${i}`));
+        this.rebuildBoundIds();
 
         this.restrictToCurrentWorkspace = this.settings.get_boolean('restrict-to-current-workspace');
         this.doNotLaunchIfNotRunning = this.settings.get_boolean('do-not-launch-if-not-running');
+    }
+
+    onSettingChanged(key) {
+        if (key.startsWith('app-')) {
+            const i = Number.parseInt(key.slice(4), 10);
+            if (Number.isInteger(i) && i >= 0 && i < MAX_NUMBER) {
+                this.apps[i] = this.loadApp(this.settings.get_string(key));
+                this.rebuildBoundIds();
+            }
+        } else if (key === 'restrict-to-current-workspace') {
+            this.restrictToCurrentWorkspace = this.settings.get_boolean(key);
+        } else if (key === 'do-not-launch-if-not-running') {
+            this.doNotLaunchIfNotRunning = this.settings.get_boolean(key);
+        }
+    }
+
+    loadApp(id) {
+        if (!id)
+            return null;
+        const info = Gio.DesktopAppInfo.new(id);
+        return info?.should_show() ? info : null;
+    }
+
+    rebuildBoundIds() {
+        this.boundAppIds = new Set();
+        for (const a of this.apps) {
+            if (a)
+                this.boundAppIds.add(a.get_id());
+        }
     }
 
     addKeyBinding(key, callback) {
@@ -91,10 +120,6 @@ export default class WunderAppHotkeyExtension extends Extension {
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             callback
         );
-    }
-
-    isMatchingApp(app, id) {
-        return app?.get_id() === id;
     }
 
     focusOrLaunch(definedApp) {
@@ -186,13 +211,7 @@ export default class WunderAppHotkeyExtension extends Extension {
     }
 
     appIsBound(app) {
-        if (!app)
-            return false;
-        for (const a of this.apps) {
-            if (a && app.get_id() === a.get_id())
-                return true;
-        }
-        return false;
+        return app ? this.boundAppIds.has(app.get_id()) : false;
     }
 
     activate(metawin) {
