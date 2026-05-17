@@ -228,9 +228,8 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     }
 
     isBindingValid({mask, keycode, keyval}) {
-        if ((mask === 0 || mask === Gdk.ModifierType.SHIFT_MASK) && keycode !== 0) {
-            if (
-                (keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z) ||
+        if ((mask === 0 || mask === Gdk.ModifierType.SHIFT_MASK) && keycode !== 0 && (
+            (keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z) ||
                 (keyval >= Gdk.KEY_A && keyval <= Gdk.KEY_Z) ||
                 (keyval >= Gdk.KEY_0 && keyval <= Gdk.KEY_9) ||
                 (keyval >= Gdk.KEY_kana_fullstop && keyval <= Gdk.KEY_semivoicedsound) ||
@@ -240,10 +239,8 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
                 (keyval >= Gdk.KEY_hebrew_doublelowline && keyval <= Gdk.KEY_hebrew_taf) ||
                 (keyval >= Gdk.KEY_Thai_kokai && keyval <= Gdk.KEY_Thai_lekkao) ||
                 (keyval >= Gdk.KEY_Hangul_Kiyeog && keyval <= Gdk.KEY_Hangul_J_YeorinHieuh) ||
-                (keyval === Gdk.KEY_space && mask === 0)
-            )
-                return false;
-        }
+                (keyval === Gdk.KEY_space && mask === 0)))
+            return false;
 
         return Gtk.accelerator_valid(keyval, mask) ||
             (keyval === Gdk.KEY_Tab && mask !== 0) ||
