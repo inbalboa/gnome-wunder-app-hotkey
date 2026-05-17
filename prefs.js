@@ -84,6 +84,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
     makeAppHotkeyRow(i, settings, parentWin) {
         const row = new Adw.ActionRow();
+        row._handlerIds = [];
 
         const iconImg = new Gtk.Image({pixel_size: ICON_SIZE});
         row.add_prefix(iconImg);
@@ -99,12 +100,13 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             else
                 iconImg.clear();
         };
-        settings.connect(`changed::app-${i}`, updateRow);
+        row._handlerIds.push(settings.connect(`changed::app-${i}`, updateRow));
         updateRow();
 
         const hotkeyBtn = this.makeHotkeyButton(`hotkey-${i}`, settings, parentWin);
         hotkeyBtn.set_valign(Gtk.Align.CENTER);
         row.add_suffix(hotkeyBtn);
+        row._handlerIds.push(hotkeyBtn._settingsHandlerId);
 
         const delBtn = new Gtk.Button({
             icon_name: 'user-trash-symbolic',
@@ -132,6 +134,10 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     }
 
     deleteHotkey(index, settings) {
+        const lastRow = this.hotkeyRows.pop();
+        for (const id of lastRow._handlerIds)
+            settings.disconnect(id);
+
         const n = settings.get_int('number') - 1;
 
         for (let i = index; i < n; i++) {
@@ -141,7 +147,6 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         settings.reset(`hotkey-${n}`);
         settings.reset(`app-${n}`);
 
-        const lastRow = this.hotkeyRows.pop();
         this.hotkeysGroup.remove(lastRow);
 
         settings.set_int('number', n);
@@ -153,7 +158,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             this.createShortcutDialog(key, settings, parentWin);
         });
 
-        settings.connect(`changed::${key}`, () => {
+        btn._settingsHandlerId = settings.connect(`changed::${key}`, () => {
             this.updateHotkeyButton(btn, key, settings);
         });
         this.updateHotkeyButton(btn, key, settings);
