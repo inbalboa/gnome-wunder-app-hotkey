@@ -16,25 +16,33 @@ export default class WunderAppHotkeyExtension extends Extension {
     apps = null;
     settings = null;
     settingId = null;
+    unboundCycleSettingId = null;
+    unboundCycleRegistered = false;
     tracker = null;
     restrictToCurrentWorkspace = false;
     doNotLaunchIfNotRunning = false;
 
     enable() {
         this.apps = [];
+        this.unboundCycleRegistered = false;
         this.settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
         this.settingId = this.settings.connect('changed', () => this.initSettings());
+        this.unboundCycleSettingId = this.settings.connect('changed::hotkey-unbound-cycle',
+            () => this.updateUnboundCycleBinding());
         this.initSettings();
         this.tracker = Shell.WindowTracker.get_default();
 
         for (let i = 0; i < MAX_NUMBER; i++)
             this.addKeyBinding(`hotkey-${i}`, () => this.focusOrLaunch(this.apps[i]));
 
-        this.addKeyBinding('hotkey-unbound-cycle', () => this.unboundCycle());
+        this.updateUnboundCycleBinding();
     }
 
     disable() {
-        Main.wm.removeKeybinding('hotkey-unbound-cycle');
+        if (this.unboundCycleRegistered) {
+            Main.wm.removeKeybinding('hotkey-unbound-cycle');
+            this.unboundCycleRegistered = false;
+        }
         for (let i = 0; i < MAX_NUMBER; i++)
             Main.wm.removeKeybinding(`hotkey-${i}`);
 
@@ -42,10 +50,25 @@ export default class WunderAppHotkeyExtension extends Extension {
             this.settings.disconnect(this.settingId);
             this.settingId = null;
         }
+        if (this.unboundCycleSettingId) {
+            this.settings.disconnect(this.unboundCycleSettingId);
+            this.unboundCycleSettingId = null;
+        }
 
         this.tracker = null;
         this.settings = null;
         this.apps = null;
+    }
+
+    updateUnboundCycleBinding() {
+        const accel = this.settings.get_strv('hotkey-unbound-cycle')[0];
+        if (accel && !this.unboundCycleRegistered) {
+            this.addKeyBinding('hotkey-unbound-cycle', () => this.unboundCycle());
+            this.unboundCycleRegistered = true;
+        } else if (!accel && this.unboundCycleRegistered) {
+            Main.wm.removeKeybinding('hotkey-unbound-cycle');
+            this.unboundCycleRegistered = false;
+        }
     }
 
     initSettings() {
