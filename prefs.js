@@ -82,6 +82,36 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         cycleBtn.set_valign(Gtk.Align.CENTER);
         cycleRow.add_suffix(cycleBtn);
         cycleGroup.add(cycleRow);
+
+        const projectLinkGroup = new Adw.PreferencesGroup();
+        page.add(projectLinkGroup);
+        const githubLinkRow = new Adw.ActionRow({
+            title: 'The project page',
+        });
+        githubLinkRow.add_suffix(new Gtk.LinkButton({
+            icon_name: 'adw-external-link-symbolic',
+            uri: 'https://github.com/inbalboa/gnome-wunder-app-hotkey',
+        }));
+        projectLinkGroup.add(githubLinkRow);
+
+        const gnuSoftwareGroup = new Adw.PreferencesGroup();
+        page.add(gnuSoftwareGroup);
+        const licenseLabel = 'This project is licensed under the GPL-3.0 License.';
+        const urlLabel = 'See the %sLicense%s for details.'.format('<a href="https://www.gnu.org/licenses/gpl.txt">', '</a>');
+        const gnuSofwareLabel = new Gtk.Label({
+            label: `<span size="small">${licenseLabel}\n${urlLabel}</span>`,
+            use_markup: true,
+            justify: Gtk.Justification.CENTER,
+        });
+        const gnuSofwareLabelBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            valign: Gtk.Align.END,
+            vexpand: true,
+            margin_top: 5,
+            margin_bottom: 10,
+        });
+        gnuSofwareLabelBox.append(gnuSofwareLabel);
+        gnuSoftwareGroup.add(gnuSofwareLabelBox);
     }
 
     makeAppHotkeyRow(i, settings, parentWin) {
