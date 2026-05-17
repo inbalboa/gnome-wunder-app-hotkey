@@ -198,24 +198,28 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
     }
 
     createShortcutDialog(hotkeyKey, settings, parentWin) {
-        const dialog = new Gtk.Dialog({
+        const dialog = new Adw.Window({
             title: 'Set hotkey',
-            use_header_bar: true,
             modal: true,
+            transient_for: parentWin,
+            default_width: 440,
+            default_height: 200,
             resizable: false,
         });
-        dialog.set_transient_for(parentWin);
-        dialog.set_size_request(440, 200);
+
+        const toolbarView = new Adw.ToolbarView();
+        toolbarView.add_top_bar(new Adw.HeaderBar());
+        dialog.set_content(toolbarView);
 
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 2,
-            marginStart: 16,
-            marginEnd: 16,
-            marginTop: 16,
-            marginBottom: 16,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 16,
+            margin_bottom: 16,
         });
-        dialog.get_content_area().append(box);
+        toolbarView.set_content(box);
 
         const label = new Gtk.Label({
             vexpand: true,
@@ -255,7 +259,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             return Gdk.EVENT_PROPAGATE;
         });
 
-        dialog.show();
+        dialog.present();
     }
 
     isBindingValid({mask, keycode, keyval}) {
