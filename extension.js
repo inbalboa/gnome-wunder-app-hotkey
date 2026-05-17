@@ -215,9 +215,7 @@ export default class WunderAppHotkeyExtension extends Extension {
     }
 
     activate(metawin) {
-        const now = global.get_current_time();
-        metawin.activate(now);
-        metawin.focus(now);
+        metawin.activate(global.get_current_time());
     }
 
     hide(metawin) {
