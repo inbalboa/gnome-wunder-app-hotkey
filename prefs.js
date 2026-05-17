@@ -12,8 +12,10 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         const settings = this.getSettings('org.gnome.shell.extensions.wunder-app-hotkey');
 
         this.hotkeyRows = [];
+        this.hotkeyButtons = new Map();
         this.addAppHotkeyPage(win, settings);
         this.addMiscSettingPage(win, settings);
+        this.refreshConflicts(settings);
     }
 
     addAppHotkeyPage(win, settings) {
@@ -139,6 +141,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             settings.disconnect(id);
 
         const n = settings.get_int('number') - 1;
+        this.hotkeyButtons.delete(`hotkey-${n}`);
 
         for (let i = index; i < n; i++) {
             settings.set_strv(`hotkey-${i}`, settings.get_strv(`hotkey-${i + 1}`));
@@ -150,6 +153,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         this.hotkeysGroup.remove(lastRow);
 
         settings.set_int('number', n);
+        this.refreshConflicts(settings);
     }
 
     makeHotkeyButton(key, settings, parentWin) {
@@ -160,10 +164,32 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         btn._settingsHandlerId = settings.connect(`changed::${key}`, () => {
             this.updateHotkeyButton(btn, key, settings);
+            this.refreshConflicts(settings);
         });
         this.updateHotkeyButton(btn, key, settings);
 
+        this.hotkeyButtons.set(key, btn);
         return btn;
+    }
+
+    refreshConflicts(settings) {
+        const counts = new Map();
+        for (const key of this.hotkeyButtons.keys()) {
+            const accel = settings.get_strv(key)[0];
+            if (accel)
+                counts.set(accel, (counts.get(accel) ?? 0) + 1);
+        }
+        for (const [key, btn] of this.hotkeyButtons) {
+            const accel = settings.get_strv(key)[0];
+            const isDup = accel && counts.get(accel) > 1;
+            if (isDup) {
+                btn.add_css_class('destructive-action');
+                btn.set_tooltip_text('Duplicate hotkey — this shortcut is assigned to another slot');
+            } else {
+                btn.remove_css_class('destructive-action');
+                btn.set_tooltip_text('');
+            }
+        }
     }
 
     updateHotkeyButton(btn, key, settings) {
