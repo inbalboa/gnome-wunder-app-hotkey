@@ -315,7 +315,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
         box.append(scrolledWindow);
 
         const listBox = new Gtk.ListBox({
-            selection_mode: Gtk.SelectionMode.NONE,
+            selection_mode: Gtk.SelectionMode.SINGLE,
             css_classes: ['boxed-list'],
         });
         scrolledWindow.set_child(listBox);
@@ -338,16 +338,49 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
             listBox.append(row);
         });
 
-        listBox.set_filter_func(row => {
+        const matchesFilter = row => {
             const query = searchEntry.text.toLowerCase();
             if (!query)
                 return true;
             return row.title.toLowerCase().includes(query) ||
                 (row.subtitle ?? '').toLowerCase().includes(query);
-        });
+        };
+
+        const firstVisibleRow = () => {
+            let child = listBox.get_first_child();
+            while (child) {
+                if (matchesFilter(child))
+                    return child;
+                child = child.get_next_sibling();
+            }
+            return null;
+        };
+
+        listBox.set_filter_func(matchesFilter);
         searchEntry.connect('search-changed', () => listBox.invalidate_filter());
 
+        searchEntry.connect('activate', () => {
+            const row = firstVisibleRow();
+            if (row)
+                row.emit('activated');
+        });
+
+        const keyController = new Gtk.EventControllerKey();
+        searchEntry.add_controller(keyController);
+        keyController.connect('key-pressed', (_w, keyval) => {
+            if (keyval === Gdk.KEY_Down) {
+                const row = firstVisibleRow();
+                if (row) {
+                    listBox.select_row(row);
+                    row.grab_focus();
+                }
+                return Gdk.EVENT_STOP;
+            }
+            return Gdk.EVENT_PROPAGATE;
+        });
+
         dialog.present();
+        searchEntry.grab_focus();
     }
 
     getInstalledApps() {
