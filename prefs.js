@@ -1,5 +1,6 @@
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import Gdk from 'gi://Gdk';
 import Gtk from 'gi://Gtk';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
@@ -123,7 +124,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         const updateRow = () => {
             const id = settings.get_string(`app-${i}`);
-            const info = id ? Gio.DesktopAppInfo.new(id) : null;
+            const info = id ? GioUnix.DesktopAppInfo.new(id) : null;
             row.title = info?.get_name() ?? '(unknown)';
             row.subtitle = info?.get_description() ?? '';
             const icon = info?.get_icon();

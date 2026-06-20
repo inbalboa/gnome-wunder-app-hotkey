@@ -1,5 +1,5 @@
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -100,7 +100,7 @@ export default class WunderAppHotkeyExtension extends Extension {
     loadApp(id) {
         if (!id)
             return null;
-        const info = Gio.DesktopAppInfo.new(id);
+        const info = GioUnix.DesktopAppInfo.new(id);
         return info?.should_show() ? info : null;
     }
 
