@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
@@ -97,7 +99,7 @@ export default class WunderAppHotkeyPreferences extends ExtensionPreferences {
 
         const gnuSoftwareGroup = new Adw.PreferencesGroup();
         page.add(gnuSoftwareGroup);
-        const licenseLabel = 'This project is licensed under the GPL-3.0 License.';
+        const licenseLabel = 'This project is licensed under the GPL-3.0-or-later License.';
         const urlLabel = 'See the %sLicense%s for details.'.format('<a href="https://www.gnu.org/licenses/gpl.txt">', '</a>');
         const gnuSofwareLabel = new Gtk.Label({
             label: `<span size="small">${licenseLabel}\n${urlLabel}</span>`,
